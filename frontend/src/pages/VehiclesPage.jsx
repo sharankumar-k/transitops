@@ -6,8 +6,11 @@ import { Search, Plus, Trash2, Edit } from 'lucide-react';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Alert from '../components/common/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const VehiclesPage = () => {
+    const { auth } = useAuth();
+    const canManageVehicles = auth?.role === 'FLEET_MANAGER';
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -82,9 +85,9 @@ const VehiclesPage = () => {
                     <h1 className="page-title">Fleet Registry</h1>
                     <p className="page-subtitle">Manage vehicle records and capacity.</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => { setFormData({ id: null, registrationNumber: '', name: '', model: '', type: 'VAN', maximumLoadCapacity: '', odometer: '', acquisitionCost: '', region: '' }); setIsModalOpen(true); }}>
+                {canManageVehicles && <button className="btn btn-primary" onClick={() => { setFormData({ id: null, registrationNumber: '', name: '', model: '', type: 'VAN', maximumLoadCapacity: '', odometer: '', acquisitionCost: '', region: '' }); setIsModalOpen(true); }}>
                     <Plus size={16} /> Add Vehicle
-                </button>
+                </button>}
             </div>
 
             <Alert type="error" message={error} />
@@ -127,10 +130,7 @@ const VehiclesPage = () => {
                                 <td>{formatNumber(v.odometer)} km</td>
                                 <td><StatusBadge status={v.status} /></td>
                                 <td>
-                                    <div className="table-actions">
-                                        <button className="btn btn-sm btn-secondary" onClick={() => openEdit(v)}><Edit size={14} /></button>
-                                        <button className="btn btn-sm btn-danger" onClick={() => setDeleteId(v.id)}><Trash2 size={14} /></button>
-                                    </div>
+                                    {canManageVehicles && (<div className="table-actions"><button className="btn btn-sm btn-secondary" onClick={() => openEdit(v)}><Edit size={14} /></button><button className="btn btn-sm btn-danger" onClick={() => setDeleteId(v.id)}><Trash2 size={14} /></button></div>)}
                                 </td>
                             </tr>
                         ))}

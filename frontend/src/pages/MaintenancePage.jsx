@@ -6,8 +6,11 @@ import { formatDate, formatCurrency } from '../utils/formatters';
 import { Plus, CheckSquare } from 'lucide-react';
 import Modal from '../components/common/Modal';
 import Alert from '../components/common/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const MaintenancePage = () => {
+  const { auth } = useAuth();
+  const canManageMaintenance = auth?.role === 'FLEET_MANAGER';
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -65,7 +68,7 @@ const MaintenancePage = () => {
           <h1 className="page-title">Maintenance Yard</h1>
           <p className="page-subtitle">Manage vehicle repairs and IN_SHOP states.</p>
         </div>
-        <button className="btn btn-primary" onClick={openAdd}><Plus size={16} /> Start Maintenance</button>
+        {canManageMaintenance && <button className="btn btn-primary" onClick={openAdd}><Plus size={16} /> Start Maintenance</button>}
       </div>
 
       <Alert type="error" message={error} />
@@ -85,7 +88,7 @@ const MaintenancePage = () => {
                 <td>{formatCurrency(r.maintenanceCost)}</td>
                 <td><StatusBadge status={r.status} /></td>
                 <td>
-                  {r.status === 'ACTIVE' && (
+                  {canManageMaintenance && r.status === 'ACTIVE' && (
                     <button className="btn btn-sm btn-secondary" onClick={() => {setCloseId(r.id); setCloseForm({...closeForm, maintenanceCost: ''})}}><CheckSquare size={14}/> Close</button>
                   )}
                 </td>

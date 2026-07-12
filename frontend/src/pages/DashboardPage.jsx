@@ -4,8 +4,12 @@ import { Truck, Map, Wrench, Users, Activity, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Alert from '../components/common/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardPage = () => {
+    const { auth } = useAuth();
+    const canManageTrips = ['FLEET_MANAGER', 'DRIVER'].includes(auth?.role);
+    const canManageMaintenance = auth?.role === 'FLEET_MANAGER';
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,8 +160,8 @@ const DashboardPage = () => {
                     <div className="card">
                         <h3 className="mb-4">Live Operations Quick Actions</h3>
                         <div className="flex-between" style={{ justifyContent: 'flex-start', gap: '1rem' }}>
-                            <Link to="/trips" className="btn btn-primary"><Play size={16} /> Dispatch Trip</Link>
-                            <Link to="/maintenance" className="btn btn-secondary"><Wrench size={16} /> Schedule Maintenance</Link>
+                            {canManageTrips && <Link to="/trips" className="btn btn-primary"><Play size={16} /> Dispatch Trip</Link>}
+                            {canManageMaintenance && <Link to="/maintenance" className="btn btn-secondary"><Wrench size={16} /> Schedule Maintenance</Link>}
                         </div>
                     </div>
                 </>

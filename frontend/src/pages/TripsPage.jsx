@@ -8,8 +8,11 @@ import { Plus, Play, CheckCircle, XCircle } from 'lucide-react';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Alert from '../components/common/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const TripsPage = () => {
+  const { auth } = useAuth();
+  const canManageTrips = ['FLEET_MANAGER', 'DRIVER'].includes(auth?.role);
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -102,7 +105,7 @@ const TripsPage = () => {
           <h1 className="page-title">Dispatch Control</h1>
           <p className="page-subtitle">Manage lifecycle of trips and routing.</p>
         </div>
-        <button className="btn btn-primary" onClick={openCreateModal}><Plus size={16} /> Create Trip</button>
+        {canManageTrips && <button className="btn btn-primary" onClick={openCreateModal}><Plus size={16} /> Create Trip</button>}
       </div>
 
       <Alert type="error" message={error} />
@@ -125,7 +128,7 @@ const TripsPage = () => {
                 <td>{formatNumber(t.cargoWeight)} kg</td>
                 <td><StatusBadge status={t.status} /></td>
                 <td>
-                  <div className="table-actions">
+                  {canManageTrips && <div className="table-actions">
                     {t.status === 'DRAFT' && (
                       <button className="btn btn-sm btn-primary" onClick={() => setDispatchId(t.id)}><Play size={14}/> Dispatch</button>
                     )}
@@ -135,7 +138,7 @@ const TripsPage = () => {
                     {(t.status === 'DRAFT' || t.status === 'DISPATCHED') && (
                       <button className="btn btn-sm btn-danger" onClick={() => setCancelId(t.id)}><XCircle size={14}/></button>
                     )}
-                  </div>
+                  </div>}
                 </td>
               </tr>
             ))}
