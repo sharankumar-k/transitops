@@ -70,7 +70,7 @@ public class ReportService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totalOtherExpenses = expenses.stream().map(Expense::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalOperationalCost = totalFuelCost.add(totalMaintenanceCost).add(totalOtherExpenses);
+        BigDecimal totalOperationalCost = totalFuelCost.add(totalMaintenanceCost);
         BigDecimal totalRevenue = trips.stream()
                 .filter(t -> t.getStatus() == TripStatus.COMPLETED)
                 .map(t -> t.getRevenue() != null ? t.getRevenue() : BigDecimal.ZERO)
