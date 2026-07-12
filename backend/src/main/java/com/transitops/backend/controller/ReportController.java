@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,11 +24,13 @@ public class ReportController {
     private final ReportService reportService;
 
     @GetMapping("/vehicle/{vehicleId}")
+    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'FINANCIAL_ANALYST')")
     public ReportDto.VehicleAnalytics getVehicleAnalytics(@PathVariable Long vehicleId) {
         return reportService.getVehicleAnalytics(vehicleId);
     }
 
     @GetMapping("/vehicles/csv")
+    @PreAuthorize("hasAnyRole('FLEET_MANAGER', 'FINANCIAL_ANALYST')")
     public void downloadVehiclesCsv(HttpServletResponse response) throws IOException {
         response.setContentType("text/csv");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"vehicle-analytics.csv\"");
