@@ -101,7 +101,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173"));
+                List.of("http://localhost:5173", 
+                        "https://transitops-frontend-bgrs.onrender.com"));
 
         configuration.setAllowedMethods(
                 List.of(
