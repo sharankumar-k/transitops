@@ -1,213 +1,328 @@
-@'
 # TransitOps
 
-Smart Transport Operations Platform built for Odoo Hackathon 2026.
+### Smart Transport Operations Platform
 
-TransitOps is a full-stack fleet and transport operations management system that manages vehicles, drivers, trips, maintenance, expenses, fuel logs, operational dashboards, analytics, and role-based access control.
+TransitOps is a full-stack transport operations platform built with **Java, Spring Boot, React, and PostgreSQL**.
 
-## Tech Stack
+It manages vehicles, drivers, trips, maintenance, fuel, expenses, and operational analytics through a centralized web application.
 
-### Backend
-- Java 21
-- Spring Boot 4
-- Spring Security
-- JWT Authentication
-- Spring Data JPA
-- Hibernate
-- PostgreSQL
-- Maven
+The project focuses on **role-based access control, backend business-rule validation, automated resource status transitions, REST APIs, and operational reporting**.
 
-### Frontend
-- React
-- Vite
-- React Router
-- Axios
-- Recharts
-- Lucide React
+## Live Demo
 
-## Architecture
+**Frontend:**
+https://transitops-frontend-bgrs.onrender.com
 
-The backend follows a layered architecture:
+**Backend API:**
+https://transitops-backend-i2ck.onrender.com
 
-Controller -> Service -> Repository -> PostgreSQL
+> The application is deployed on Render. Free instances may take a few seconds to wake after inactivity.
 
-The React frontend communicates with REST APIs through Axios. JWT tokens are attached to authenticated API requests.
+## Demo Accounts
 
-## Core Modules
+| Role              | Email                    | Password      |
+| ----------------- | ------------------------ | ------------- |
+| Fleet Manager     | `fleet@transitops.com`   | `Fleet@123`   |
+| Driver            | `driver@transitops.com`  | `Driver@123`  |
+| Safety Officer    | `safety@transitops.com`  | `Safety@123`  |
+| Financial Analyst | `finance@transitops.com` | `Finance@123` |
 
-- Authentication and Role-Based Access Control
-- Vehicle Management
-- Driver Management
-- Trip and Dispatch Management
-- Maintenance Management
-- Fuel Logging
-- Expense Management
-- Operations Dashboard
-- Vehicle Analytics
-- CSV Report Export
+## Key Features
 
-## Roles
+* JWT-based authentication
+* Role-Based Access Control using Spring Security
+* Vehicle and driver management
+* Trip creation, dispatch, completion, and cancellation
+* Backend dispatch validation
+* Automatic vehicle and driver status transitions
+* Maintenance and fuel tracking
+* Expense management
+* Dashboard KPIs and charts
+* Search and filtering
+* Vehicle operational analytics
+* CSV report export
+* PostgreSQL persistence
+* RESTful backend APIs
+* Responsive React frontend
 
-TransitOps supports:
+## Role-Based Access
 
-- FLEET_MANAGER
-- DISPATCHER
-- SAFETY_OFFICER
-- FINANCIAL_ANALYST
+### Fleet Manager
 
-Backend authorization is enforced using Spring Security method-level authorization.
+* Manage vehicles
+* Manage fleet operations
+* Manage maintenance
+* Manage trips
 
-## Business Rules
+### Driver
 
-### Trip Dispatch
+* Access trip-related operations
+* View assigned operational information
 
-A trip can be dispatched only when:
+### Safety Officer
 
-- Trip status is DRAFT
-- Vehicle status is AVAILABLE
-- Driver status is AVAILABLE
-- Cargo weight does not exceed vehicle capacity
-- Driver license is valid
+* Manage driver compliance information
+* Monitor license and safety data
 
-When dispatched:
+### Financial Analyst
 
-- Trip becomes DISPATCHED
-- Vehicle becomes ON_TRIP
-- Driver becomes ON_TRIP
-- Vehicle odometer is captured as the trip start odometer
+* Manage expenses and fuel costs
+* View operational cost and financial analytics
 
-### Trip Completion
+## Core Business Rules
 
-When a trip is completed:
+The backend enforces important transport operation rules instead of relying only on frontend validation.
 
-- Trip becomes COMPLETED
-- Vehicle odometer is updated
-- Vehicle returns to AVAILABLE
-- Driver returns to AVAILABLE
-- Fuel information can be recorded automatically
+* Retired vehicles cannot be dispatched
+* Vehicles under maintenance cannot be dispatched
+* Vehicles already on a trip cannot be reassigned
+* Expired driver licenses prevent trip assignment
+* Suspended drivers cannot be assigned
+* Drivers already on a trip cannot be reassigned
+* Cargo weight cannot exceed vehicle capacity
+* Only `DRAFT` trips can be dispatched
 
-### Maintenance
+### Dispatch Lifecycle
 
-When maintenance starts:
+```text
+DRAFT
+  ↓
+DISPATCHED
+  ↓
+COMPLETED
+```
 
-- Maintenance becomes ACTIVE
-- Vehicle becomes IN_SHOP
-- IN_SHOP vehicles cannot be dispatched
+or
 
-When maintenance closes:
+```text
+DISPATCHED
+  ↓
+CANCELLED
+```
 
-- Maintenance becomes CLOSED
-- Maintenance cost is recorded
-- Vehicle returns to AVAILABLE
+When a trip is dispatched:
 
-## Concurrency-Safe Dispatch
+```text
+Trip    → DISPATCHED
+Vehicle → ON_TRIP
+Driver  → ON_TRIP
+```
 
-TransitOps validates trip, vehicle, and driver state before dispatch.
+When completed or cancelled:
 
-The dispatch workflow prevents repeated dispatch and unavailable vehicle or driver assignment. Transactional service operations maintain consistent resource state during trip lifecycle transitions.
+```text
+Vehicle → AVAILABLE
+Driver  → AVAILABLE
+```
 
-## Analytics
+### Maintenance Lifecycle
+
+```text
+AVAILABLE
+    ↓
+IN_SHOP
+    ↓
+AVAILABLE
+```
+
+Vehicles in `IN_SHOP` status are automatically prevented from being dispatched.
+
+## Backend Engineering
+
+The dispatch workflow performs backend validation for:
+
+* Trip state
+* Vehicle availability
+* Driver availability
+* Driver license validity
+* Cargo capacity
+
+Transactional service operations maintain consistent resource states and prevent unavailable vehicles or drivers from being assigned to multiple trips.
+
+## Analytics & Reporting
 
 Vehicle analytics include:
 
-- Completed Distance
-- Fuel Consumption
-- Fuel Efficiency
-- Fuel Cost
-- Maintenance Cost
-- Other Expenses
-- Operational Cost
-- Revenue
-- Vehicle ROI
+* Completed distance
+* Fuel consumption
+* Fuel efficiency
+* Fuel cost
+* Maintenance cost
+* Other expenses
+* Operational cost
+* Revenue
+* Vehicle ROI
 
-### Formulas
+Reports can be exported as **CSV files** for spreadsheet-based analysis.
 
-Fuel Efficiency:
+## Technology Stack
 
-`Completed Distance / Fuel Liters`
+### Backend
 
-Operational Cost:
+* Java 21
+* Spring Boot 4
+* Spring Security
+* JWT
+* Spring Data JPA
+* Hibernate
+* PostgreSQL
+* Maven
 
-`Fuel Cost + Maintenance Cost`
+### Frontend
 
-Vehicle ROI:
+* React
+* Vite
+* React Router
+* Axios
+* Recharts
+* Lucide React
 
-`((Revenue - Fuel Cost - Maintenance Cost) / Acquisition Cost) * 100`
+### Deployment
 
-## Demo Workflow
+* Render Static Site — React frontend
+* Render Docker Web Service — Spring Boot backend
+* PostgreSQL — Database
 
-A verified workflow includes:
+## Architecture
 
-1. Create Van-05 with 500 kg maximum capacity.
-2. Register driver Alex with a valid license.
-3. Create a 450 kg trip.
-4. Dispatch the trip.
-5. Vehicle and driver automatically move to ON_TRIP.
-6. Repeated dispatch is rejected.
-7. Complete the trip and update the final odometer.
-8. Vehicle and driver automatically return to AVAILABLE.
-9. Fuel usage is automatically recorded.
-10. Start maintenance.
-11. Vehicle moves to IN_SHOP.
-12. Dispatch using the IN_SHOP vehicle is rejected.
-13. Close maintenance and record maintenance cost.
-14. Vehicle returns to AVAILABLE.
-15. Analytics and CSV reports reflect operational data.
+```text
+React + Vite
+     │
+     │ Axios / REST API
+     ▼
+Spring Boot
+     │
+Spring Security
+     │
+JWT Authentication
+     ▼
+Controllers
+     ▼
+Services
+     ▼
+Spring Data JPA
+     ▼
+PostgreSQL
+```
 
-## API Overview
+The frontend communicates with the backend through REST APIs. JWT tokens are attached to authenticated requests, while Spring Security handles backend authorization.
 
-### Authentication
-- `POST /api/auth/login`
+## Project Structure
 
-### Dashboard
-- `GET /api/dashboard`
+```text
+transitops/
+├── backend/
+│   ├── src/
+│   ├── pom.xml
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   └── utils/
+│   └── package.json
+│
+└── README.md
+```
 
-### Vehicles
-- `/api/vehicles`
-
-### Drivers
-- `/api/drivers`
-
-### Trips
-- `/api/trips`
-- `POST /api/trips/{id}/dispatch`
-- `POST /api/trips/{id}/complete`
-- `POST /api/trips/{id}/cancel`
-
-### Maintenance
-- `/api/maintenance`
-- `POST /api/maintenance/{id}/close`
-
-### Fuel Logs
-- `/api/fuel-logs`
-
-### Expenses
-- `/api/expenses`
-
-### Reports
-- `GET /api/reports/vehicle/{vehicleId}`
-- `GET /api/reports/vehicles/csv`
-
-## Local Setup
+## Run Locally
 
 ### Prerequisites
 
-- Java 21
-- Node.js
-- PostgreSQL
+* Java 21
+* Node.js
+* PostgreSQL
+* Git
 
-### Database
+### 1. Create Database
 
-Create a PostgreSQL database named:
+```sql
+CREATE DATABASE transitops;
+```
 
-`transitops`
+Configure the PostgreSQL connection in:
 
-Configure database credentials in:
+```text
+backend/src/main/resources/application.properties
+```
 
-`backend/src/main/resources/application.properties`
+### 2. Start Backend
 
-### Run Backend
+Windows:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+Linux/macOS:
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
+```
+
+Backend:
+
+```text
+http://localhost:8080
+```
+
+### 3. Start Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend:
+
+```text
+http://localhost:5173
+```
+
+## Security
+
+TransitOps implements:
+
+* JWT authentication
+* Spring Security authorization
+* BCrypt password hashing
+* Role-based endpoint protection
+* Protected React routes
+* Stateless authentication
+* Production CORS configuration
+
+## Project Highlights
+
+This project demonstrates practical experience with:
+
+* Full-stack application development
+* Java and Spring Boot
+* REST API design
+* Spring Security and JWT
+* Role-Based Access Control
+* JPA/Hibernate
+* PostgreSQL database design
+* Backend business-rule validation
+* Transactional workflows
+* React frontend development
+* Search and filtering
+* Operational analytics
+* CSV reporting
+* Docker-based deployment
+
+## Repository
+
+https://github.com/sharankumar-k/transitops
+
+## Author
+
+**Sharan Kumar K**
+
+GitHub:
+https://github.com/sharankumar-k
